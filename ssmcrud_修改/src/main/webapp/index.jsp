@@ -30,6 +30,56 @@
 
 <body>
 
+<!-- 员工修改Modal -->
+    <div class="modal fade" id="empUpdateModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" >员工修改</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal">
+                    <div class="form-group">
+                        <label  class="col-sm-2 control-label">empUser</label>
+                        <div class="col-sm-10">
+                            <p class="form-control-static" id="empUser_update_static"></p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label  class="col-sm-2 control-label">email</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="email" id="email_update_input"
+                                   placeholder="xxx@.com">
+                            <span class="help-block"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label  class="col-sm-2 control-label">gender</label>
+                        <div class="col-sm-10">
+                            <label class="radio-inline">
+                                <input type="radio" name="gender" id="gender1_update_input" value="M" checked="checked">男
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" name="gender" id="gender2_update_input" value="F"> 女
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label  class="col-sm-2 control-label">deptName</label>
+                        <div class="col-sm-4">
+                            <select class="form-control" name="dId" id="deptName_update_input"></select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="emp_update_bt">更新</button>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- 员工添加Modal -->
 <div class="modal fade" id="empAddModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
     <div class="modal-dialog" role="document">
@@ -119,6 +169,7 @@
     </div>
     <script type="text/javascript">
         var totalRecord;
+        var currentPage;
         //页面加载完成后，直接发送一个ajax请求，拿到分页数据
         $(function () {
             to_page(1);
@@ -150,10 +201,13 @@
                 var  genderTd = $("<td></td>").append(item.gender=="M"?"男":"女");
                 var  emailTd = $("<td></td>").append(item.email);
                 var  deptNameTd = $("<td></td>").append(item.department.deptName);
-                var  editbt=$("<button></button>").addClass("btn btn-primary btn-sm")
+                var  editbt=$("<button></button>").addClass("btn btn-primary btn-sm edit_bt")
                     .append($("<span></span>").addClass("glyphicon glyphicon-pencil")).append("编辑");
-                var  delbt=$("<button></button>").addClass("btn btn-danger btn-sm")
+                //添加自定义属性
+                editbt.attr("edit_id",item.empId);
+                var  delbt=$("<button></button>").addClass("btn btn-danger btn-sm delete_bt")
                     .append($("<span></span>").addClass("glyphicon glyphicon-trash")).append("删除");
+                delbt.attr("del_id",item.empId);
                 var btTd = $("<td></td>").append(editbt).append(" ").append(delbt);
                 $("<tr></tr>").append(empIdTd).append(empUserTd).append(genderTd)
                     .append(emailTd).append(deptNameTd).append(btTd).appendTo("#emps_table tbody");
@@ -165,6 +219,8 @@
                 result.extend.pageInfo.pages+"页，"+
                 result.extend.pageInfo.total+"条记录");
             totalRecord=result.extend.pageInfo.total;
+            currentPage=result.extend.pageInfo.pageNum;
+
         }
         function build_page_nav(result) {
              $("#page_nav").empty();
@@ -223,115 +279,197 @@
         $("#emp_add_modal_bt").click(function () {
 
             reset_form("#empAddModal form");
-            getDepts();
+            getDepts("#empAddModal select");
 
             $("#empAddModal").modal({
-                backdrop:"static"
+                backdrop: "static"
             });
-            function getDepts() {
+        });
+
+            function getDepts(ele) {
+                $(ele).empty();
                 $.ajax({
-                    url:"<%=path%>/depts",
-                    type:"GET",
-                    success:function (result){
+                    url: "<%=path%>/depts",
+                    type: "GET",
+                    success: function (result) {
                         //console.log(result);
                         //"{code":200,"msg":"处理成功！","extend":{"depts":[{"deptId":1,"deptName":"开发部"},
                         // {"deptId":2,"deptName":"测试部"}]}}
-                        $.each(result.extend.depts,function () {
-                            var optionBt=$("<option></option>").append(this.deptName).attr("value",this.deptId);
-                            optionBt.appendTo("#deptName_add_input");
+                        $.each(result.extend.depts, function () {
+                            var optionBt = $("<option></option>").append(this.deptName).attr("value", this.deptId);
+                            optionBt.appendTo(ele);
                         });
                     }
                 });
             }
-            function validate_add_form(){
-                var  empUser=$("#empUser_add_input" ).val();
-                var  regUser= /(^[A-Za-z0-9_]{3,16}$)|(^[\u2E80-\u9FFF]{2,5}$)/;
-                if (!regUser.test(empUser)){
-                    show_validate_msg("#empUser_add_input" ,"error","用户名可以是2-5位中文或者3-16位英文数字下划线组合");
+
+            function validate_add_form() {
+                var empUser = $("#empUser_add_input").val();
+                var regUser = /(^[A-Za-z0-9_]{3,16}$)|(^[\u2E80-\u9FFF]{2,5}$)/;
+                if (!regUser.test(empUser)) {
+                    show_validate_msg("#empUser_add_input", "error", "用户名可以是2-5位中文或者3-16位英文数字下划线组合");
                     return false;
                 }
                 else {
-                    show_validate_msg("#empUser_add_input" ,"success"," ");
+                    show_validate_msg("#empUser_add_input", "success", " ");
                 }
-                var  email=$("#email_add_input").val();
-                var  regEmail= /^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/;
-                if (!regEmail.test(email)){
-                    show_validate_msg("#email_add_input" ,"error","邮箱格式不正确");
+                var email = $("#email_add_input").val();
+                var regEmail = /^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/;
+                if (!regEmail.test(email)) {
+                    show_validate_msg("#email_add_input", "error", "邮箱格式不正确");
                     return false;
                 }
                 else {
-                    show_validate_msg("#email_add_input" ,"success"," ");
+                    show_validate_msg("#email_add_input", "success", " ");
                 }
                 return true;
             }
 
-            function show_validate_msg(ele,status,msg){
+            function show_validate_msg(ele, status, msg) {
                 //清除当前元素校验状态
                 $(ele).parent
                 $(ele).parent().removeClass("has-success has-error");
                 $(ele).next("span").text(" ");
-                if ("success"==status){
+                if ("success" == status) {
                     $(ele).parent().addClass("has-success");
                     $(ele).next("span").text(msg)
                 }
-                else if ("error"==status) {
+                else if ("error" == status) {
                     $(ele).parent().addClass("has-error");
                     $(ele).next("span").text(msg)
                 }
             }
 
-            $("#empUser_add_input" ).change(function (){
-                var  empUser=this.value;
+            $("#empUser_add_input").change(function () {
+                var empUser = this.value;
                 $.ajax({
-                    url:"<%=path%>/checkUser",
-                    type:"POST",
-                    data:"empUser="+empUser,
-                    success:function (result){
-                        if (result.code==200){
-                            show_validate_msg("#empUser_add_input" ,"success","用户名可用");
-                            $("#emp_save_bt" ).attr("ajax_va","success");
+                    url: "<%=path%>/checkUser",
+                    type: "POST",
+                    data: "empUser=" + empUser,
+                    success: function (result) {
+                        if (result.code == 200) {
+                            show_validate_msg("#empUser_add_input", "success", "用户名可用");
+                            $("#emp_save_bt").attr("ajax_va", "success");
                         }
                         else {
-                            show_validate_msg("#empUser_add_input" ,"error",result.extend.va_msg);
-                            $("#emp_save_bt" ).attr("ajax_va","error");
+                            show_validate_msg("#empUser_add_input", "error", result.extend.va_msg);
+                            $("#emp_save_bt").attr("ajax_va", "error");
                         }
                     }
                 });
             });
 
-            $("#emp_save_bt" ).click(function () {
-                if(!validate_add_form()){
+            $("#emp_save_bt").click(function () {
+                if (!validate_add_form()) {
                     return false;
                 }
-                if ($(this).attr("ajax_va")=="error"){
+                if ($(this).attr("ajax_va") == "error") {
                     return false;
                 }
                 $.ajax({
-                    url:"<%=path%>/empSave",
-                    type:"POST",
-                    data:$("#empAddModal form").serialize(),
-                    success:function (result){
+                    url: "<%=path%>/empSave",
+                    type: "POST",
+                    data: $("#empAddModal form").serialize(),
+                    success: function (result) {
                         if (result.code == 200) {
                             //员工保存成功；
                             //1、关闭模态框
                             $("#empAddModal").modal('hide');
                             //2、来到最后一页，显示刚才保存的数据，发送ajax请求显示最后一页数据
-                            to_page(totalRecord);
+                            to_page(totalRecordre);
                         } else {
-                            if(undefined != result.extend.errorFields.email){
+                            if (undefined != result.extend.errorFields.email) {
                                 //显示邮箱错误信息
                                 show_validate_msg("#email_add_input", "error", result.extend.errorFields.email);
                             }
-                            if(undefined != result.extend.errorFields.empUser){
+                            if (undefined != result.extend.errorFields.empUser) {
                                 //显示员工名字的错误信息
                                 show_validate_msg("#empUser_add_input", "error", result.extend.errorFields.empUser);
                             }
-
                         }
                     }
                 });
             });
+
+            $(document).on("click", ".edit_bt", function () {
+
+                //清空模态框
+                reset_form("#empUpdateModal form");
+
+                getDepts("#deptName_update_input");
+                //查询员工信息。
+                getEmp($(this).attr("edit_id"));
+
+                //把员工 的 id 传递给模态框的更新按钮
+                $("#emp_update_bt").attr("edit_id", $(this).attr("edit_id"));
+
+                $("#empUpdateModal").modal({
+                    backdrop: "static"
+                });
+            });
+
+            function getEmp(empId) {
+                $.ajax({
+                    url: "<%=path%>/getEmp/" + empId,
+                    type: "GET",
+                    success: function (result) {
+                        var empData = result.extend.emp;
+                        $("#empUser_update_static").text(empData.empUser);
+                        $("#email_update_input").val(empData.email);
+                        $("#empUpdateModal input [name=gender]").val([empData.gender]);
+                        $("#empUpdateModal select").val([empData.dId]);
+                    }
+                });
+            }
+            $("#emp_update_bt").click(function () {
+                var email = $("#email_update_input").val();
+                var regEmail = /^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/;
+                if (!regEmail.test(email)) {
+                    show_validate_msg("#email_update_input", "error", "邮箱格式不正确");
+                    return false;
+                }
+                else {
+                    show_validate_msg("#email_update_input", "success", " ");
+                }
+                $.ajax({
+                    url: "<%=path%>/empUpdate/"+ $(this).attr("edit_id"),
+                    type: "POST",
+                    data: $("#empUpdateModal form").serialize(),
+                    success: function (result) {
+                        if (result.code == 200) {
+                            //员工保存成功；
+                            //1、关闭模态框
+                            $("#empUpdateModal").modal('hide');
+                            //2、来到最后一页，显示刚才保存的数据，发送ajax请求显示最后一页数据
+                            to_page(currentPage);
+                        } else {
+                            if (undefined != result.extend.errorFields.email) {
+                                //显示邮箱错误信息
+                                show_validate_msg("#email_update_input", "error", result.extend.errorFields.email);
+                            }
+                            if (undefined != result.extend.errorFields.empUser) {
+                                //显示员工名字的错误信息
+                                show_validate_msg("#empUser_update_input", "error", result.extend.errorFields.empUser);
+                            }
+                        }
+                    }
+                });
+            });
+        $(document).on("click", ".delete_bt", function (){
+
+            var empUser=$(this).parents("tr").find("td:eq(1)").text();
+            var empId=$(this).attr("del_id");
+            if (confirm("确认删除【"+empUser+"】吗？")){
+                $.ajax({
+                    url: "<%=path%>/empDelete/" + empId,
+                    type: "DELETE",
+                    success: function (result) {
+                        alert(result.msg);
+                    }
+                });
+            }
         });
+
     </script>
 
 
