@@ -1,0 +1,15 @@
+com\huawei\bean\EmployeeExample.class
+com\huawei\bean\Employee.class
+com\huawei\bean\EmployeeExample$Criteria.class
+com\huawei\bean\EmployeeExample$GeneratedCriteria.class
+com\huawei\bean\Department.class
+com\huawei\test\MBGtest.class
+com\huawei\bean\DepartmentExample$GeneratedCriteria.class
+com\huawei\dao\DepartmentMapper.class
+com\huawei\bean\DepartmentExample.class
+com\huawei\bean\EmployeeExample$Criterion.class
+com\huawei\bean\DepartmentExample$Criteria.class
+com\huawei\bean\DepartmentExample$Criterion.class
+com\huawei\controller\EmployeeController.class
+com\huawei\dao\EmployeeMapper.class
+com\huawei\service\EmployeeService.class
