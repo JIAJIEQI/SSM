@@ -86,9 +86,13 @@ public class EmployeeController {
         //引入分页插件PageHelper
         //传入页码，每页数量
         PageHelper.startPage(pn,5);
+        //desc为降序，asc为升序
+        PageHelper.orderBy("emp_id asc");
         //分页查询
         List<Employee> emps=employeeService.getAll();
+
         //使用pageinfo包装查询后的结果，将pageinfo交给页面
+
         PageInfo page=new PageInfo(emps,5);
         return Msg.success().add("pageInfo",page);
     }

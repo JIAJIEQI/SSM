@@ -151,6 +151,9 @@
             <table class="table table-hover" id="emps_table">
                 <thead>
                     <tr>
+                        <td>
+                        <input type="checkbox" id="check_all"/>
+                    </td>
                         <td>#</td>
                         <td>empUser</td>
                         <td>gender</td>
@@ -159,7 +162,7 @@
                         <td>操作</td>
                     </tr>
                 </thead>
-                <tbody></tbody>
+                <tbody id="emps_table_tbody"></tbody>
             </table>
         </div>
     </div>
@@ -182,7 +185,7 @@
                 //请求成功回调函数
                 success:function (result) {
                     //控制台打印
-                    //console.log(result)
+                    console.log(result);
                     build_emps_table(result);
                     build_page_info(result);
                     build_page_nav(result);
@@ -192,10 +195,11 @@
         
         function build_emps_table(result) {
             //清空表格
-            $("#emps_table tbody").empty();
+            $("#emps_table_tbody").empty();
             var emps=result.extend.pageInfo.list;
             $.each(emps,function (index,item) {
                 //弹窗 alert(item.empUser)
+                var  checkboxTd=$("<td><input type='checkbox' class='check_item'/></td>")
                 var  empIdTd = $("<td></td>").append(item.empId);
                 var  empUserTd = $("<td></td>").append(item.empUser);
                 var  genderTd = $("<td></td>").append(item.gender=="M"?"男":"女");
@@ -209,8 +213,10 @@
                     .append($("<span></span>").addClass("glyphicon glyphicon-trash")).append("删除");
                 delbt.attr("del_id",item.empId);
                 var btTd = $("<td></td>").append(editbt).append(" ").append(delbt);
-                $("<tr></tr>").append(empIdTd).append(empUserTd).append(genderTd)
-                    .append(emailTd).append(deptNameTd).append(btTd).appendTo("#emps_table tbody");
+                 $("<tr></tr>").append(checkboxTd).append(empIdTd)
+                                .append(empUserTd).append(genderTd)
+                                .append(emailTd).append(deptNameTd)
+                                .append(btTd).appendTo("#emps_table tbody");
             });
         }
         function build_page_info(result) {
@@ -376,7 +382,7 @@
                             //1、关闭模态框
                             $("#empAddModal").modal('hide');
                             //2、来到最后一页，显示刚才保存的数据，发送ajax请求显示最后一页数据
-                            to_page(totalRecordre);
+                            to_page(totalRecord);
                         } else {
                             if (undefined != result.extend.errorFields.email) {
                                 //显示邮箱错误信息
@@ -416,7 +422,7 @@
                         var empData = result.extend.emp;
                         $("#empUser_update_static").text(empData.empUser);
                         $("#email_update_input").val(empData.email);
-                        $("#empUpdateModal input [name=gender]").val([empData.gender]);
+                        $("#empUpdateModal input[name=gender]").val([empData.gender]);
                         $("#empUpdateModal select").val([empData.dId]);
                     }
                 });
@@ -464,14 +470,22 @@
                     url: "<%=path%>/empDelete/" + empId,
                     type: "DELETE",
                     success: function (result) {
-                        alert(result.msg);
+                        to_page(currentPage);
                     }
                 });
             }
         });
+        $("#check_all").click(function (){
+            //prom修改和读取dom原生属性，attr获取自定义属性的值
+            //$(this).prop("checked");
+            $(".check_item").prop("checked",$(this).prop("checked"));
+        });
+        $(document).on("click", ".check_item", function (){
+            var  flag=$(".check_item:checked").length==$(".check_item").length;
+            $("#check_all").prop("checked",flag);
 
+        });
     </script>
-
 
 </div>
 
