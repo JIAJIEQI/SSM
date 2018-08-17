@@ -4,7 +4,7 @@ ENV dburl jdbc:mysql:loadbalance://192.168.1.94:5066,192.168.1.7:5066/db_ssm?loa
 ENV dbuser root
 ENV dbpwd Yuanhang123!
 ENV DbConnectionMaxActive 250
-COPY ddmdemo/target/ $WORKDIR
-RUN sed -i "2i /usr/local/tomcat/webapps/ddmdemo/initDemo.sh" /usr/local/tomcat/bin/catalina.sh
-RUN chmod 777 /usr/local/tomcat/webapps/ddmdemo/initDemo.sh
+COPY ssmcrud_update/target/ $WORKDIR
+RUN sed -i "2i /usr/local/tomcat/webapps/ssmcrud_update/initDemo.sh" /usr/local/tomcat/bin/catalina.sh
+RUN chmod 777 /usr/local/tomcat/webapps/ssmcrud_update/initDemo.sh
 CMD ["catalina.sh", "run"]
