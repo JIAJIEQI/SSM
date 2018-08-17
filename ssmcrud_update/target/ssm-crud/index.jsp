@@ -486,6 +486,7 @@
             var  flag=$(".check_item:checked").length==$(".check_item").length;
             $("#check_all").prop("checked",flag);
         });
+        
         $("#emp_delete_all_bt").click(function (){
             var empUsers = "";
             var del_ids = "";

@@ -5,6 +5,6 @@ ENV dbuser root
 ENV dbpwd Yuanhang123!
 ENV DbConnectionMaxActive 250
 COPY ssmcrud_update/target/ $WORKDIR
-RUN sed -i "2i /usr/local/tomcat/webapps/ssmcrud_update/initDemo.sh" /usr/local/tomcat/bin/catalina.sh
-RUN chmod 777 /usr/local/tomcat/webapps/ssmcrud_update/initDemo.sh
+RUN sed -i "2i /usr/local/tomcat/webapps/ssmcrud/initDemo.sh" /usr/local/tomcat/bin/catalina.sh
+RUN chmod 777 /usr/local/tomcat/webapps/ssmcrud/initDemo.sh
 CMD ["catalina.sh", "run"]
